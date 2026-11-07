@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Task - Campaign Tracker</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/906/906343.png">
+    
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body { 
+            background-color: #f8fafc; 
+            color: #0f172a; 
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; 
+            overflow-x: hidden;
+        }
+
+        .parallax-wrapper {
+            perspective: 1000px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .clean-card {
+            background: #ffffff;
+            box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05);
+            border: 1px solid #f1f5f9;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+            will-change: transform;
+        }
+
+        .clean-card-inset {
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+        }
+
+        .brand-button {
+            background: #f97316;
+            color: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.4);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .brand-button:active {
+            transform: scale(0.96) translateY(1px);
+            background: #ea580c;
+        }
+
+        .clean-input {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            color: #0f172a;
+            transition: all 0.2s ease;
+        }
+        .clean-input:focus {
+            border-color: #f97316;
+            outline: none;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+        }
+
+        .glass-neomorphic-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15), 
+                        inset 0 1px 0 rgba(255, 255, 255, 1);
+        }
+
+        .view-transition-enter {
+            animation: parallaxSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes parallaxSlideIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes brand-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.06); opacity: 0.85; }
+        }
+        .animate-brand {
+            animation: brand-pulse 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <div id="parallax-bg-1" class="fixed -top-10 -right-10 w-72 h-72 bg-orange-100/50 rounded-full blur-3xl pointer-events-none"></div>
+    <div id="parallax-bg-2" class="fixed -bottom-10 -left-10 w-80 h-80 bg-slate-200/40 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div id="app" class="max-w-md mx-auto w-full min-h-screen bg-white/90 backdrop-blur-md shadow-2xl flex flex-col relative overflow-hidden border-x border-slate-100 z-10">
+        
+        <!-- HEADER -->
+        <header id="app-header" class="hidden p-4 border-b border-slate-100 flex items-center justify-between bg-white/90 backdrop-blur sticky top-0 z-20">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-black flex items-center justify-center p-2 shadow-md">
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <path d="M30 15 C50 15, 85 30, 85 50 C85 70, 50 85, 30 85 Z" fill="#ffedd5" opacity="0.4"/>
+                        <path d="M30 20 C48 20, 78 35, 75 55 C72 75, 45 80, 30 80 Z" fill="#fdba74" opacity="0.8"/>
+                        <path d="M30 25 C45 25, 70 40, 65 60 C60 80, 40 85, 30 85 Z" fill="#f97316"/>
+                        <path d="M30 15 L30 85 C42 85, 55 70, 55 50 C55 30, 42 15, 30 15 Z" fill="#ffffff"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-slate-900 text-lg tracking-tight leading-tight">My Task</h1>
+                    <p class="text-xs text-orange-600 font-semibold">Campaign Tracker</p>
+                </div>
+            </div>
+            <button id="logout-btn" onclick="logout()" class="hidden text-xs px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200">Logout</button>
+        </header>
+
+        <!-- MAIN SCROLLABLE CONTENT AREA -->
+        <main class="flex-1 overflow-y-auto p-4 pb-28 flex flex-col justify-center parallax-wrapper" id="main-scroll-area">
+            
+            <!-- BRANDED SPLASH SCREEN -->
+            <div id="view-splash" class="flex flex-col items-center justify-center space-y-4 py-12 view-transition-enter">
+                <div class="w-24 h-24 rounded-3xl bg-black flex items-center justify-center p-5 shadow-2xl animate-brand">
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <path d="M30 15 C50 15, 85 30, 85 50 C85 70, 50 85, 30 85 Z" fill="#ffedd5" opacity="0.4"/>
+                        <path d="M30 20 C48 20, 78 35, 75 55 C72 75, 45 80, 30 80 Z" fill="#fdba74" opacity="0.8"/>
+                        <path d="M30 25 C45 25, 70 40, 65 60 C60 80, 40 85, 30 85 Z" fill="#f97316"/>
+                        <path d="M30 15 L30 85 C42 85, 55 70, 55 50 C55 30, 42 15, 30 15 Z" fill="#ffffff"/>
+                    </svg>
+                </div>
+                <div class="text-center space-y-1">
+                    <h1 class="text-3xl font-black text-slate-900 tracking-tight">My Task</h1>
+                    <p class="text-xs text-orange-600 font-extrabold tracking-widest uppercase">Campaign Tracker</p>
+                </div>
+                <div class="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin mt-4"></div>
+            </div>
+
+            <!-- SKELETON LOADING SCREEN -->
+            <div id="view-skeleton" class="hidden space-y-5 animate-pulse">
+                <div class="clean-card p-5 rounded-2xl space-y-3">
+                    <div class="flex justify-between items-start">
+                        <div class="space-y-2">
+                            <div class="w-24 h-3 bg-slate-200 rounded"></div>
+                            <div class="w-32 h-6 bg-slate-200 rounded"></div>
+                        </div>
+                        <div class="space-y-2 text-right">
+                            <div class="w-16 h-3 bg-slate-200 rounded ml-auto"></div>
+                            <div class="w-12 h-6 bg-slate-200 rounded ml-auto"></div>
+                        </div>
+                    </div>
+                    <div class="w-full h-3 bg-slate-200 rounded-full"></div>
+                </div>
+
+                <div class="clean-card p-5 rounded-2xl space-y-4">
+                    <div class="w-48 h-4 bg-slate-200 rounded"></div>
+                    <div class="w-full h-12 bg-slate-200 rounded-xl"></div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="h-16 bg-slate-200 rounded-xl"></div>
+                        <div class="h-16 bg-slate-200 rounded-xl"></div>
+                        <div class="h-16 bg-slate-200 rounded-xl"></div>
+                    </div>
+                    <div class="w-full h-14 bg-slate-200 rounded-2xl"></div>
+                </div>
+
+                <div class="clean-card p-4 rounded-2xl space-y-3">
+                    <div class="w-36 h-4 bg-slate-200 rounded"></div>
+                    <div class="h-12 bg-slate-200 rounded-xl"></div>
+                    <div class="h-32 bg-slate-200 rounded-xl"></div>
+                </div>
+            </div>
+
+            <!-- INSTALL SCREEN -->
+            <div id="view-install" class="hidden space-y-6 py-8 text-center view-transition-enter">
+                <div class="w-24 h-24 bg-orange-50 rounded-3xl mx-auto flex items-center justify-center text-orange-600 shadow-inner">
+                    <i data-lucide="smartphone" class="w-12 h-12"></i>
+                </div>
+                
+                <div class="space-y-2 px-2">
+                    <h2 class="text-2xl font-black text-slate-900 tracking-tight">Add App to Phone</h2>
+                    <p class="text-base text-slate-500 font-medium">Tap below to place "My Task" on your home screen.</p>
+                </div>
+
+                <div class="pt-2 space-y-4 px-2">
+                    <button id="btn-pwa-install" onclick="triggerPWAInstall()" class="w-full py-5 brand-button text-white font-extrabold text-xl rounded-2xl flex items-center justify-center space-x-3">
+                        <i data-lucide="download" class="w-7 h-7"></i>
+                        <span>INSTALL NOW</span>
+                    </button>
+
+                    <button onclick="showLoginView()" class="w-full py-3 text-sm font-semibold text-slate-400 underline">
+                        Or continue on website without installing
+                    </button>
+                </div>
+            </div>
+
+            <!-- LOGIN VIEW -->
+            <div id="view-login" class="hidden space-y-8 py-8 w-full max-w-sm mx-auto view-transition-enter">
+                <div class="text-center space-y-3">
+                    <div class="w-20 h-20 rounded-3xl bg-black mx-auto flex items-center justify-center p-4 shadow-xl">
+                        <svg viewBox="0 0 100 100" class="w-full h-full">
+                            <path d="M30 15 C50 15, 85 30, 85 50 C85 70, 50 85, 30 85 Z" fill="#ffedd5" opacity="0.4"/>
+                            <path d="M30 20 C48 20, 78 35, 75 55 C72 75, 45 80, 30 80 Z" fill="#fdba74" opacity="0.8"/>
+                            <path d="M30 25 C45 25, 70 40, 65 60 C60 80, 40 85, 30 85 Z" fill="#f97316"/>
+                            <path d="M30 15 L30 85 C42 85, 55 70, 55 50 C55 30, 42 15, 30 15 Z" fill="#ffffff"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-black text-slate-900 tracking-tight">My Task</h1>
+                        <p class="text-xs text-orange-600 font-extrabold tracking-widest uppercase mt-0.5">Campaign Tracker</p>
+                    </div>
+                </div>
+
+                <div class="clean-card p-6 rounded-3xl space-y-5 shadow-xl border border-slate-100">
+                    <div class="space-y-1">
+                        <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Sign In</h2>
+                        <p class="text-xs text-slate-400 font-medium">Enter your 10-digit mobile number to continue</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="space-y-1.5">
+                            <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Mobile Number</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-bold text-base">+91</span>
+                                <input type="tel" id="login-phone" placeholder="9578811680" class="w-full pl-12 pr-4 py-3.5 text-base clean-input rounded-2xl font-bold">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-2.5 pt-1">
+                            <input type="checkbox" id="remember-me" class="w-4 h-4 text-orange-600 rounded border-slate-300 focus:ring-orange-500" checked>
+                            <label for="remember-me" class="text-xs font-bold text-slate-600 cursor-pointer">Stay signed in on this device</label>
+                        </div>
+
+                        <button onclick="handleLogin()" id="login-submit-btn" class="w-full py-4 brand-button text-white font-extrabold text-base rounded-2xl shadow-lg mt-2">
+                            Sign In
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD VIEW -->
+            <div id="view-dashboard" class="hidden space-y-5 view-transition-enter">
+                
+                <div class="clean-card p-5 rounded-2xl space-y-3 border-l-4 border-orange-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[10px] font-extrabold text-orange-600 uppercase tracking-widest">CAMPAIGN TARGET (DEC 6)</span>
+                            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight" id="user-display-name">User Name</h2>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 block font-semibold">Overall Left</span>
+                            <span class="text-2xl font-black text-orange-600" id="campaign-remaining-display">0</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-xs font-bold">
+                            <span class="text-slate-500" id="campaign-progress-label">Done: 0 / 300</span>
+                            <span class="text-orange-600 font-extrabold" id="campaign-percent">0%</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5">
+                            <div id="campaign-bar-fill" class="h-full bg-orange-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clean-card p-5 rounded-2xl space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <h3 class="font-extrabold text-slate-800 text-sm flex items-center gap-2">
+                            <i data-lucide="target" class="w-4 h-4 text-orange-500"></i>
+                            My Daily Tasks & Targets
+                        </h3>
+                    </div>
+
+                    <div id="goal-manager-box" class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Set / Update Today's Target</label>
+                            <span id="current-goal-indicator" class="text-xs font-semibold text-slate-400"></span>
+                        </div>
+                        <div class="flex space-x-2">
+                            <input type="number" id="input-today-goal" placeholder="e.g. 10 invites" class="flex-1 px-4 py-3 clean-input rounded-xl text-sm font-bold">
+                            <button onclick="setTodayGoal()" class="px-6 py-3 brand-button text-white font-extrabold text-xs rounded-xl shadow-md">Set Target</button>
+                        </div>
+                    </div>
+
+                    <div id="today-report-container" class="hidden space-y-4 pt-1">
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="clean-card-inset p-3 rounded-xl">
+                                <span class="text-[10px] text-slate-400 uppercase font-bold block">Today Target</span>
+                                <span class="text-lg font-black text-slate-800" id="rpt-today-goal">0</span>
+                            </div>
+                            <div class="clean-card-inset p-3 rounded-xl">
+                                <span class="text-[10px] text-slate-400 uppercase font-bold block">Completed</span>
+                                <span class="text-lg font-black text-emerald-600" id="rpt-today-done">0</span>
+                            </div>
+                            <div class="clean-card-inset p-3 rounded-xl">
+                                <span class="text-[10px] text-slate-400 uppercase font-bold block">Remaining</span>
+                                <span class="text-lg font-black text-orange-600" id="rpt-today-remaining">0</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 space-y-2">
+                            <button id="btn-tap-invite" onclick="tapInvite()" class="w-full py-4 brand-button text-white font-extrabold text-base rounded-2xl flex flex-col items-center justify-center shadow-lg space-y-0.5">
+                                <div class="flex items-center space-x-2">
+                                    <i data-lucide="user-plus" class="w-5 h-5"></i>
+                                    <span>TAP AFTER EVERY INVITE (+1)</span>
+                                </div>
+                                <span class="text-[11px] text-orange-100 font-medium opacity-90">Tap this every time you successfully invite someone today</span>
+                            </button>
+                            <div id="tap-toast" class="h-5 text-xs font-extrabold text-center text-orange-600 opacity-0 transition-opacity duration-300">Great job! 🎉</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clean-card p-4 rounded-2xl space-y-3">
+                    <h3 class="font-extrabold text-sm text-slate-800 flex items-center gap-2">
+                        <i data-lucide="history" class="w-4 h-4 text-orange-500"></i>
+                        Date-Wise History
+                    </h3>
+
+                    <div id="history-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+
+                    <div class="h-36 relative pt-2">
+                        <canvas id="userChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ADMIN VIEW -->
+            <div id="view-superuser" class="hidden space-y-6 view-transition-enter">
+                <div class="clean-card p-5 rounded-2xl flex items-center justify-between border-l-4 border-black">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-black text-orange-400 rounded-2xl flex items-center justify-center font-black text-lg shadow-md">👑</div>
+                        <div>
+                            <h3 class="font-extrabold text-slate-900 text-base">Admin Command Center</h3>
+                            <p class="text-xs text-slate-500 font-medium">Complete team monitoring & analytics</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="clean-card p-4 rounded-2xl">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Total Team Invites</span>
+                        <span class="text-2xl font-black text-orange-600" id="admin-total-invites">0</span>
+                    </div>
+                    <div class="clean-card p-4 rounded-2xl">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Active Members Today</span>
+                        <span class="text-2xl font-black text-emerald-600" id="admin-active-count">0 / 9</span>
+                    </div>
+                </div>
+
+                <div id="top-performer-banner" class="clean-card p-4 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-orange-100">🔥 Current Leader</span>
+                        <h4 class="text-lg font-black" id="top-performer-name">Loading...</h4>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-2xl font-black" id="top-performer-score">0</span>
+                        <span class="block text-[10px] text-orange-100 font-bold">Total Invites</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+                        <input type="text" id="admin-search-input" oninput="filterTeamList()" placeholder="Search member by name..." class="w-full pl-10 pr-4 py-3 clean-input rounded-2xl text-xs font-bold">
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="setAdminFilter('all')" id="filter-btn-all" class="flex-1 py-2 text-xs font-extrabold rounded-xl bg-orange-500 text-white shadow-sm">All</button>
+                        <button onclick="setAdminFilter('active')" id="filter-btn-active" class="flex-1 py-2 text-xs font-extrabold rounded-xl bg-slate-100 text-slate-600">Active Today</button>
+                        <button onclick="setAdminFilter('pending')" id="filter-btn-pending" class="flex-1 py-2 text-xs font-extrabold rounded-xl bg-slate-100 text-slate-600">No Target Yet</button>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center px-1">
+                        <h4 class="font-extrabold text-xs text-slate-400 uppercase tracking-wider">Detailed Team Member Reports</h4>
+                        <span class="text-xs text-orange-600 font-extrabold" id="total-team-invites-header">Target: 300 each</span>
+                    </div>
+                    <div id="team-list-container" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- INDIVIDUAL MEMBER REPORT VIEW -->
+            <div id="view-member-report" class="hidden space-y-5 view-transition-enter">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <button onclick="switchTab('superuser')" class="flex items-center space-x-1.5 text-xs font-bold text-orange-600 bg-orange-50 px-3 py-2 rounded-xl">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Back to Admin</span>
+                    </button>
+                    <span class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Member Deep Dive</span>
+                </div>
+
+                <div class="clean-card p-5 rounded-2xl space-y-3 border-l-4 border-orange-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[10px] font-extrabold text-orange-600 uppercase tracking-widest">MEMBER PROFILE</span>
+                            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight" id="detail-user-name">-</h2>
+                            <p class="text-xs text-slate-400 font-medium" id="detail-user-phone">-</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 block font-semibold">Total Done</span>
+                            <span class="text-2xl font-black text-orange-600" id="detail-user-total">0</span>
+                        </div>
+                    </div>
+                    <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5">
+                        <div id="detail-bar-fill" class="h-full bg-orange-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="clean-card p-4 rounded-2xl space-y-3">
+                    <h3 class="font-extrabold text-sm text-slate-800 flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-4 h-4 text-orange-500"></i>
+                        Day-by-Day Activity Logs
+                    </h3>
+                    <div id="detail-history-list" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
+
+                    <div class="h-40 relative pt-2">
+                        <canvas id="memberChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- FLOATING GLASSMORPHIC / NEOMORPHIC NAVIGATION BAR (ADMIN ONLY) -->
+        <nav id="bottom-nav" class="hidden fixed bottom-4 left-4 right-4 max-w-sm mx-auto glass-neomorphic-nav rounded-2xl px-6 py-2.5 flex justify-around items-center text-xs font-semibold z-40">
+            <button onclick="switchTab('dashboard')" id="nav-dash" class="flex flex-col items-center text-orange-600 font-bold transition-transform active:scale-95">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 mb-0.5"></i>
+                <span>My Dashboard</span>
+            </button>
+            <div class="w-px h-5 bg-slate-200/80"></div>
+            <button onclick="switchTab('superuser')" id="nav-admin" class="flex flex-col items-center text-slate-400 hover:text-slate-800 font-bold transition-transform active:scale-95">
+                <i data-lucide="shield-check" class="w-5 h-5 mb-0.5"></i>
+                <span>Admin Suite</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- MODERN FLOATING NOTIFICATION TOAST -->
+    <div id="modern-toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs font-bold py-3 px-6 rounded-2xl shadow-2xl z-50 transition-all duration-300 opacity-0 pointer-events-none">
+    </div>
+
+    <!-- EXIT CONFIRMATION TOAST -->
+    <div id="exit-toast" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs font-bold py-2 px-4 rounded-full shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none z-50">
+        Press back again to exit
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyFd-Dm07RjZ1JPfKhRfVoji_LBt146Sb9-SXi1FBDtKTdcwp8Quap3shE3AD7yOgtUOQ/exec";
+
+        let currentUser = null;
+        let dbUsers = [];
+        let dbLogs = [];
+        let userChartInstance = null;
+        let memberChartInstance = null;
+        let deferredPrompt = null;
+        let todayGoal = 0;
+        let lastBackPress = 0;
+        let currentAdminFilter = 'all';
+
+        const PRAISE_MESSAGES = ["Awesome!", "Keep going! 🔥", "1 step closer!", "Great work!", "Fantastic! 🎉", "Target almost there!"];
+
+        lucide.createIcons();
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+
+        const mainArea = document.getElementById('main-scroll-area');
+        const bg1 = document.getElementById('parallax-bg-1');
+        const bg2 = document.getElementById('parallax-bg-2');
+
+        mainArea.addEventListener('scroll', () => {
+            const scrollTop = mainArea.scrollTop;
+            bg1.style.transform = `translateY(${scrollTop * -0.15}px)`;
+            bg2.style.transform = `translateY(${scrollTop * 0.12}px)`;
+        });
+
+        function showToast(message) {
+            const toast = document.getElementById("modern-toast");
+            toast.innerText = message;
+            toast.style.opacity = "1";
+            setTimeout(() => { toast.style.opacity = "0"; }, 2500);
+        }
+
+        window.addEventListener('popstate', (e) => {
+            e.preventDefault();
+            const now = new Date().getTime();
+            const toast = document.getElementById("exit-toast");
+
+            if (now - lastBackPress < 2000) {
+                history.back();
+            } else {
+                lastBackPress = now;
+                history.pushState(null, '', window.location.href);
+                toast.style.opacity = "1";
+                setTimeout(() => { toast.style.opacity = "0"; }, 2000);
+            }
+        });
+        history.pushState(null, '', window.location.href);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAutoLogin();
+        });
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        function hideSplash() {
+            document.getElementById("view-splash").classList.add("hidden");
+            document.getElementById("view-skeleton").classList.add("hidden");
+        }
+
+        function showSkeleton() {
+            document.getElementById("view-splash").classList.add("hidden");
+            document.getElementById("view-login").classList.add("hidden");
+            document.getElementById("view-install").classList.add("hidden");
+            document.getElementById("view-dashboard").classList.add("hidden");
+            document.getElementById("view-superuser").classList.add("hidden");
+            document.getElementById("view-member-report").classList.add("hidden");
+            document.getElementById("view-skeleton").classList.remove("hidden");
+        }
+
+        async function triggerPWAInstall() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') showLoginView();
+                deferredPrompt = null;
+            } else if (isIOS) {
+                showToast("Tap Share (⎋) then 'Add to Home Screen'");
+                showLoginView();
+            } else {
+                showLoginView();
+            }
+        }
+
+        function showLoginView() {
+            hideSplash();
+            document.getElementById("view-skeleton").classList.add("hidden");
+            document.getElementById("app-header").classList.add("hidden");
+            document.getElementById("view-install").classList.add("hidden");
+            document.getElementById("view-login").classList.remove("hidden");
+            document.getElementById("bottom-nav").classList.add("hidden");
+        }
+
+        async function checkAutoLogin() {
+            const savedPhone = localStorage.getItem("saved_user_phone");
+            if (savedPhone) {
+                showSkeleton();
+                await fetchData();
+                const foundUser = dbUsers.find(u => String(u.phone).replace(/\D/g, '') === savedPhone.replace(/\D/g, ''));
+                if (foundUser) {
+                    currentUser = foundUser;
+                    initDashboard();
+                    return;
+                }
+            }
+            
+            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+                showLoginView();
+            } else {
+                hideSplash();
+                document.getElementById("app-header").classList.add("hidden");
+                document.getElementById("view-install").classList.remove("hidden");
+                document.getElementById("bottom-nav").classList.add("hidden");
+            }
+        }
+
+        function switchTab(tab) {
+            const dash = document.getElementById("view-dashboard");
+            const admin = document.getElementById("view-superuser");
+            const detail = document.getElementById("view-member-report");
+
+            dash.classList.add("hidden");
+            admin.classList.add("hidden");
+            detail.classList.add("hidden");
+
+            document.getElementById("nav-dash").className = "flex flex-col items-center text-slate-400 hover:text-slate-800 font-bold transition-transform active:scale-95";
+            document.getElementById("nav-admin").className = "flex flex-col items-center text-slate-400 hover:text-slate-800 font-bold transition-transform active:scale-95";
+
+            if (tab === 'dashboard') {
+                dash.classList.remove("hidden");
+                dash.classList.remove("view-transition-enter");
+                void dash.offsetWidth;
+                dash.classList.add("view-transition-enter");
+                document.getElementById("nav-dash").className = "flex flex-col items-center text-orange-600 font-bold transition-transform active:scale-95";
+            } else if (tab === 'superuser') {
+                admin.classList.remove("hidden");
+                admin.classList.remove("view-transition-enter");
+                void admin.offsetWidth;
+                admin.classList.add("view-transition-enter");
+                document.getElementById("nav-admin").className = "flex flex-col items-center text-orange-600 font-bold transition-transform active:scale-95";
+                loadSuperUserData();
+            }
+        }
+
+        async function fetchData() {
+            try {
+                const res = await fetch(WEB_APP_URL);
+                const data = await res.json();
+                dbUsers = data.users || [];
+                dbLogs = data.logs || [];
+            } catch (err) {
+                console.error("Fetch error", err);
+            }
+        }
+
+        async function handleLogin() {
+            const phoneInput = document.getElementById("login-phone").value.trim();
+            const rememberMe = document.getElementById("remember-me").checked;
+
+            if (!phoneInput) {
+                showToast("Please enter mobile number");
+                return;
+            }
+
+            const btn = document.getElementById("login-submit-btn");
+            btn.innerText = "Signing in...";
+            btn.disabled = true;
+
+            showSkeleton();
+            await fetchData();
+
+            btn.innerText = "Sign In";
+            btn.disabled = false;
+
+            const foundUser = dbUsers.find(u => String(u.phone).replace(/\D/g, '') === phoneInput.replace(/\D/g, ''));
+            if (!foundUser) {
+                hideSplash();
+                showLoginView();
+                showToast("Mobile number not registered.");
+                return;
+            }
+
+            currentUser = foundUser;
+            if (rememberMe) {
+                localStorage.setItem("saved_user_phone", currentUser.phone);
+            } else {
+                localStorage.removeItem("saved_user_phone");
+            }
+            initDashboard();
+        }
+
+        function initDashboard() {
+            hideSplash();
+            document.getElementById("app-header").classList.remove("hidden");
+            document.getElementById("view-install").classList.add("hidden");
+            document.getElementById("view-login").classList.add("hidden");
+            document.getElementById("view-dashboard").classList.remove("hidden");
+            document.getElementById("logout-btn").classList.remove("hidden");
+
+            document.getElementById("user-display-name").innerText = currentUser.name || "Member";
+
+            const isAdmin = String(currentUser.is_admin).trim().toUpperCase() === "TRUE";
+            const navBar = document.getElementById("bottom-nav");
+            
+            if (isAdmin) {
+                navBar.classList.remove("hidden");
+            } else {
+                navBar.classList.add("hidden");
+            }
+
+            const savedGoal = localStorage.getItem(`goal_${currentUser.phone}_${getTodayDateString()}`);
+            if (savedGoal) {
+                todayGoal = Number(savedGoal);
+                document.getElementById("input-today-goal").value = todayGoal;
+                document.getElementById("current-goal-indicator").innerText = `Active Target: ${todayGoal}`;
+            } else {
+                document.getElementById("current-goal-indicator").innerText = `No target set yet today`;
+            }
+
+            document.getElementById("today-report-container").classList.remove("hidden");
+            renderDashboardMetrics();
+        }
+
+        function getTodayDateString() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function setTodayGoal() {
+            const val = parseInt(document.getElementById("input-today-goal").value);
+            if (isNaN(val) || val <= 0) {
+                showToast("Please enter a valid target number");
+                return;
+            }
+            todayGoal = val;
+            localStorage.setItem(`goal_${currentUser.phone}_${getTodayDateString()}`, todayGoal);
+            
+            document.getElementById("current-goal-indicator").innerText = `Active Target: ${todayGoal}`;
+            renderDashboardMetrics();
+            showToast("Target set successfully!");
+        }
+
+        function renderDashboardMetrics() {
+            const userLogs = dbLogs.filter(l => String(l.phone).replace(/\D/g, '') === String(currentUser.phone).replace(/\D/g, ''));
+
+            const overallTarget = Number(currentUser.target_goal) || 300;
+            const totalInvitesDone = userLogs.reduce((acc, curr) => acc + Number(curr.invites_completed || 0), 0);
+            const overallRemaining = Math.max(0, overallTarget - totalInvitesDone);
+            const overallPercent = Math.min(Math.round((totalInvitesDone / overallTarget) * 100), 100);
+
+            document.getElementById("campaign-remaining-display").innerText = overallRemaining;
+            document.getElementById("campaign-progress-label").innerText = `Done: ${totalInvitesDone} / ${overallTarget}`;
+            document.getElementById("campaign-percent").innerText = `${overallPercent}%`;
+            document.getElementById("campaign-bar-fill").style.width = `${overallPercent}%`;
+
+            const todayStr = getTodayDateString();
+            const todayLogs = userLogs.filter(l => String(l.date).startsWith(todayStr));
+            const todayDone = todayLogs.reduce((acc, curr) => acc + Number(curr.invites_completed || 0), 0);
+            const todayRemaining = Math.max(0, todayGoal - todayDone);
+
+            document.getElementById("rpt-today-goal").innerText = todayGoal;
+            document.getElementById("rpt-today-done").innerText = todayDone;
+            document.getElementById("rpt-today-remaining").innerText = todayRemaining;
+
+            renderHistoryList(userLogs);
+            renderChart(userLogs);
+        }
+
+        async function tapInvite() {
+            if (todayGoal <= 0) {
+                showToast("Please set your today's target goal first!");
+                return;
+            }
+
+            const toast = document.getElementById("tap-toast");
+            const randomPraise = PRAISE_MESSAGES[Math.floor(Math.random() * PRAISE_MESSAGES.length)];
+            toast.innerText = randomPraise;
+            toast.style.opacity = "1";
+            setTimeout(() => { toast.style.opacity = "0"; }, 1200);
+
+            const todayStr = getTodayDateString();
+            dbLogs.push({
+                phone: currentUser.phone,
+                date: todayStr,
+                invites_completed: 1
+            });
+            renderDashboardMetrics();
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({
+                        action: "logInvite",
+                        phone: currentUser.phone,
+                        date: todayStr,
+                        invites: 1
+                    })
+                });
+            } catch (e) {
+                console.error("Background sync error", e);
+            }
+        }
+
+        function renderHistoryList(userLogs) {
+            const list = document.getElementById("history-list");
+            list.innerHTML = "";
+
+            if (userLogs.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4 font-medium">No previous activity logged yet.</p>`;
+                return;
+            }
+
+            const grouped = {};
+            userLogs.forEach(l => {
+                const d = String(l.date).substring(0, 10);
+                grouped[d] = (grouped[d] || 0) + Number(l.invites_completed || 0);
+            });
+
+            Object.keys(grouped).sort().reverse().forEach(dateStr => {
+                const item = document.createElement("div");
+                item.className = "clean-card-inset p-3 rounded-xl flex items-center justify-between text-xs";
+                item.innerHTML = `
+                    <div>
+                        <span class="font-extrabold text-slate-800 block">${dateStr}</span>
+                        <span class="text-[10px] text-slate-400 font-semibold">Activity Logged</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-black text-orange-600 text-sm">${grouped[dateStr]} Invites</span>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function renderChart(userLogs) {
+            const ctx = document.getElementById("userChart").getContext("2d");
+            
+            const labels = userLogs.length > 0 ? userLogs.slice(-7).map(l => String(l.date).substring(5, 10)) : ["Today"];
+            const dataPoints = userLogs.length > 0 ? userLogs.slice(-7).map(l => Number(l.invites_completed)) : [0];
+
+            if (userChartInstance) userChartInstance.destroy();
+
+            userChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Invites',
+                        data: dataPoints,
+                        backgroundColor: '#f97316',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } }, 
+                        x: { grid: { display: false }, ticks: { color: '#64748b' } } 
+                    }
+                }
+            });
+        }
+
+        function setAdminFilter(filter) {
+            currentAdminFilter = filter;
+            ['all', 'active', 'pending'].forEach(f => {
+                const btn = document.getElementById(`filter-btn-${f}`);
+                if (f === filter) {
+                    btn.className = "flex-1 py-2 text-xs font-extrabold rounded-xl bg-orange-500 text-white shadow-sm";
+                } else {
+                    btn.className = "flex-1 py-2 text-xs font-extrabold rounded-xl bg-slate-100 text-slate-600";
+                }
+            });
+            loadSuperUserData();
+        }
+
+        function filterTeamList() {
+            loadSuperUserData();
+        }
+
+        function loadSuperUserData() {
+            const container = document.getElementById("team-list-container");
+            container.innerHTML = "";
+            let totalTeamInvites = 0;
+            let activeTodayCount = 0;
+            const todayStr = getTodayDateString();
+            const searchTerm = document.getElementById("admin-search-input").value.toLowerCase();
+
+            const scoredUsers = dbUsers.map(u => {
+                const userLogs = dbLogs.filter(l => String(l.phone).replace(/\D/g, '') === String(u.phone).replace(/\D/g, ''));
+                const totalCount = userLogs.reduce((acc, curr) => acc + Number(curr.invites_completed || 0), 0);
+                const todayLogs = userLogs.filter(l => String(l.date).startsWith(todayStr));
+                const todayCount = todayLogs.reduce((acc, curr) => acc + Number(curr.invites_completed || 0), 0);
+                const userGoal = localStorage.getItem(`goal_${u.phone}_${todayStr}`) || "Not Set";
+                return { u, userLogs, totalCount, todayCount, userGoal };
+            });
+
+            scoredUsers.sort((a, b) => b.totalCount - a.totalCount);
+
+            if (scoredUsers.length > 0) {
+                document.getElementById("top-performer-name").innerText = scoredUsers[0].u.name;
+                document.getElementById("top-performer-score").innerText = scoredUsers[0].totalCount;
+            }
+
+            scoredUsers.forEach(({ u, userLogs, totalCount, todayCount, userGoal }, index) => {
+                totalTeamInvites += totalCount;
+                if (todayCount > 0) activeTodayCount++;
+
+                if (searchTerm && !u.name.toLowerCase().includes(searchTerm)) return;
+                if (currentAdminFilter === 'active' && todayCount === 0) return;
+                if (currentAdminFilter === 'pending' && userGoal !== "Not Set") return;
+
+                const campaignTarget = Number(u.target_goal) || 300;
+                const percent = Math.min(Math.round((totalCount / campaignTarget) * 100), 100);
+                const rankBadge = index === 0 ? "👑 #1" : index === 1 ? "🥈 #2" : index === 2 ? "🥉 #3" : `#${index + 1}`;
+
+                const item = document.createElement("div");
+                item.className = "clean-card p-4 rounded-2xl space-y-3 cursor-pointer hover:border-orange-300 transition-colors";
+                item.onclick = (e) => {
+                    if (e.target.closest('.wa-btn')) return;
+                    openMemberReport(u);
+                };
+
+                const cleanPhone = String(u.phone).replace(/\D/g, '');
+                const waMessage = encodeURIComponent(`Hey ${u.name}, just checking in on today's campaign invites! Let's crush our goals today. 💪`);
+
+                item.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="text-xs font-black text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">${rankBadge}</span>
+                            <div>
+                                <h5 class="font-extrabold text-slate-900 text-base">${u.name}</h5>
+                                <div class="flex items-center space-x-2">
+                                    <p class="text-[11px] text-slate-400 font-medium">+91 ${u.phone}</p>
+                                    <a href="https://wa.me/91${cleanPhone}?text=${waMessage}" target="_blank" class="wa-btn text-[10px] text-emerald-600 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-md hover:bg-emerald-100 flex items-center gap-1">
+                                        💬 WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-black text-orange-600">${totalCount} / ${campaignTarget}</span>
+                            <span class="block text-[10px] text-slate-400 font-bold">${percent}% Completed</span>
+                        </div>
+                    </div>
+
+                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-orange-500 rounded-full" style="width: ${percent}%"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-1 text-xs">
+                        <div class="clean-card-inset p-2.5 rounded-xl">
+                            <span class="text-[9px] text-slate-400 uppercase font-bold block">Today's Target</span>
+                            <span class="font-extrabold text-slate-800">${userGoal}</span>
+                        </div>
+                        <div class="clean-card-inset p-2.5 rounded-xl">
+                            <span class="text-[9px] text-slate-400 uppercase font-bold block">Today's Done</span>
+                            <span class="font-extrabold text-emerald-600">${todayCount} Invites</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+
+            document.getElementById("admin-total-invites").innerText = totalTeamInvites;
+            document.getElementById("admin-active-count").innerText = `${activeTodayCount} / ${dbUsers.length}`;
+            document.getElementById("total-team-invites-header").innerText = `Total Team: ${totalTeamInvites}`;
+        }
+
+        function openMemberReport(user) {
+            document.getElementById("view-superuser").classList.add("hidden");
+            const detailView = document.getElementById("view-member-report");
+            detailView.classList.remove("hidden");
+            detailView.classList.remove("view-transition-enter");
+            void detailView.offsetWidth;
+            detailView.classList.add("view-transition-enter");
+
+            document.getElementById("detail-user-name").innerText = user.name;
+            document.getElementById("detail-user-phone").innerText = `+91 ${user.phone}`;
+
+            const userLogs = dbLogs.filter(l => String(l.phone).replace(/\D/g, '') === String(user.phone).replace(/\D/g, ''));
+            const totalCount = userLogs.reduce((acc, curr) => acc + Number(curr.invites_completed || 0), 0);
+            const campaignTarget = Number(user.target_goal) || 300;
+            const percent = Math.min(Math.round((totalCount / campaignTarget) * 100), 100);
+
+            document.getElementById("detail-user-total").innerText = `${totalCount} / ${campaignTarget}`;
+            document.getElementById("detail-bar-fill").style.width = `${percent}%`;
+
+            const list = document.getElementById("detail-history-list");
+            list.innerHTML = "";
+            if (userLogs.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4 font-medium">No activity logged for this user yet.</p>`;
+            } else {
+                const grouped = {};
+                userLogs.forEach(l => {
+                    const d = String(l.date).substring(0, 10);
+                    grouped[d] = (grouped[d] || 0) + Number(l.invites_completed || 0);
+                });
+
+                Object.keys(grouped).sort().reverse().forEach(dateStr => {
+                    const item = document.createElement("div");
+                    item.className = "clean-card-inset p-3 rounded-xl flex items-center justify-between text-xs";
+                    item.innerHTML = `
+                        <div>
+                            <span class="font-extrabold text-slate-800 block">${dateStr}</span>
+                            <span class="text-[10px] text-slate-400 font-semibold">Verified Log</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-black text-orange-600 text-sm">${grouped[dateStr]} Invites</span>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+
+            const ctx = document.getElementById("memberChart").getContext("2d");
+            const labels = userLogs.length > 0 ? userLogs.slice(-7).map(l => String(l.date).substring(5, 10)) : ["No Data"];
+            const dataPoints = userLogs.length > 0 ? userLogs.slice(-7).map(l => Number(l.invites_completed)) : [0];
+
+            if (memberChartInstance) memberChartInstance.destroy();
+
+            memberChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Invites',
+                        data: dataPoints,
+                        backgroundColor: '#f97316',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } }, 
+                        x: { grid: { display: false }, ticks: { color: '#64748b' } } 
+                    }
+                }
+            });
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem("saved_user_phone");
+            document.getElementById("view-dashboard").classList.add("hidden");
+            document.getElementById("view-superuser").classList.add("hidden");
+            document.getElementById("view-member-report").classList.add("hidden");
+            document.getElementById("app-header").classList.add("hidden");
+            document.getElementById("bottom-nav").classList.add("hidden");
+            document.getElementById("view-login").classList.remove("hidden");
+            document.getElementById("login-phone").value = "";
+        }
+    </script>
+</body>
+</html>

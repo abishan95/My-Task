@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "../my-goal-app/dist"
+		},
+		{
+			"path": "../my-goal-app/docs"
+		},
+		{
+			"path": "../my-goal-app/node_modules"
+		},
+		{
+			"path": "../my-goal-app/public"
+		},
+		{
+			"path": "../my-goal-app/src"
+		}
+	]
+}
