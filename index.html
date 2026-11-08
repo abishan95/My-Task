@@ -686,8 +686,8 @@
                 navBar.classList.add("hidden");
             }
 
-            const savedGoal = localStorage.getItem(`batch_goal_${currentUser.phone}_${getTodayDateString()}`);
-            const savedProgress = localStorage.getItem(`batch_prog_${currentUser.phone}_${getTodayDateString()}`);
+            const savedGoal = localStorage.getItem(`batch_goal_${currentUser.phone}`);
+            const savedProgress = localStorage.getItem(`batch_prog_${currentUser.phone}`);
 
             if (savedGoal) {
                 batchTarget = Number(savedGoal);
@@ -715,10 +715,10 @@
                 return;
             }
             batchTarget = val;
-            batchProgress = 0; // Reset batch progress when a fresh target is set
+            batchProgress = 0; // Fresh start from zero for this new batch target
             
-            localStorage.setItem(`batch_goal_${currentUser.phone}_${getTodayDateString()}`, batchTarget);
-            localStorage.setItem(`batch_prog_${currentUser.phone}_${getTodayDateString()}`, batchProgress);
+            localStorage.setItem(`batch_goal_${currentUser.phone}`, batchTarget);
+            localStorage.setItem(`batch_prog_${currentUser.phone}`, batchProgress);
             
             document.getElementById("current-goal-indicator").innerText = `Active Target: ${batchTarget}`;
             renderDashboardMetrics();
@@ -738,12 +738,13 @@
             document.getElementById("campaign-percent").innerText = `${overallPercent}%`;
             document.getElementById("campaign-bar-fill").style.width = `${overallPercent}%`;
 
-            // Calculate countdown remaining
-            const remainingCount = Math.max(0, batchTarget - batchProgress);
+            // Strict batch countdown metrics
+            const completedInBatch = Math.min(batchProgress, batchTarget);
+            const remainingInBatch = Math.max(0, batchTarget - completedInBatch);
 
             document.getElementById("rpt-today-goal").innerText = batchTarget;
-            document.getElementById("rpt-today-done").innerText = batchProgress;
-            document.getElementById("rpt-today-remaining").innerText = remainingCount;
+            document.getElementById("rpt-today-done").innerText = completedInBatch;
+            document.getElementById("rpt-today-remaining").innerText = remainingInBatch;
 
             const tapBtn = document.getElementById("btn-tap-invite");
             const tapBtnText = document.getElementById("tap-btn-text");
@@ -775,7 +776,7 @@
             }
 
             batchProgress += 1;
-            localStorage.setItem(`batch_prog_${currentUser.phone}_${getTodayDateString()}`, batchProgress);
+            localStorage.setItem(`batch_prog_${currentUser.phone}`, batchProgress);
 
             const todayStr = getTodayDateString();
             dbLogs.push({
@@ -785,7 +786,7 @@
             });
 
             if (batchProgress >= batchTarget) {
-                showToast("🎉 Awesome! Daily Target Completed!");
+                showToast("🎉 Target Completed! Set a new batch target.");
             } else {
                 const randomPraise = PRAISE_MESSAGES[Math.floor(Math.random() * PRAISE_MESSAGES.length)];
                 showToast(randomPraise);
@@ -902,7 +903,7 @@
                 const totalCount = userLogs.reduce((acc, curr) => acc + Number(curr.invites_completed || 0), 0);
                 const todayLogs = userLogs.filter(l => String(l.date).startsWith(todayStr));
                 const todayCount = todayLogs.reduce((acc, curr) => acc + Number(curr.invites_completed || 0), 0);
-                const userGoal = localStorage.getItem(`batch_goal_${u.phone}_${todayStr}`) || "Not Set";
+                const userGoal = localStorage.getItem(`batch_goal_${u.phone}`) || "Not Set";
                 return { u, userLogs, totalCount, todayCount, userGoal };
             });
 
@@ -961,7 +962,7 @@
 
                     <div class="grid grid-cols-2 gap-2 pt-1 text-xs">
                         <div class="clean-card-inset p-2.5 rounded-xl">
-                            <span class="text-[9px] text-slate-400 uppercase font-bold block">Today's Target</span>
+                            <span class="text-[9px] text-slate-400 uppercase font-bold block">Batch Target</span>
                             <span class="font-extrabold text-slate-800">${userGoal}</span>
                         </div>
                         <div class="clean-card-inset p-2.5 rounded-xl">
