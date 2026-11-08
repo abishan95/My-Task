@@ -558,18 +558,17 @@
             document.getElementById("bottom-nav").classList.add("hidden");
         }
 
-        async function checkAutoLogin() {
-            const savedPhone = localStorage.getItem("saved_user_phone");
-            if (savedPhone) {
-                showSkeleton();
-                await fetchData();
-                const foundUser = dbUsers.find(u => String(u.phone).replace(/\D/g, '') === savedPhone.replace(/\D/g, ''));
-                if (foundUser) {
-                    currentUser = foundUser;
-                    initDashboard();
-                    return;
-                }
-            }
+       async function fetchData() {
+    try {
+        // Add a timestamp query parameter to prevent browser caching of old sheets data
+        const res = await fetch(WEB_APP_URL + "?t=" + new Date().getTime());
+        const data = await res.json();
+        dbUsers = data.users || [];
+        dbLogs = data.logs || [];
+    } catch (err) {
+        console.error("Fetch error", err);
+    }
+}
             
             if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
                 showLoginView();
