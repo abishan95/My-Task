@@ -476,6 +476,7 @@
         let deferredPrompt = null;
         let batchTarget = 0;
         let batchProgress = 0;
+        let batchId = "";
         let lastBackPress = 0;
         let currentAdminFilter = 'all';
 
@@ -686,17 +687,20 @@
                 navBar.classList.add("hidden");
             }
 
-            const savedGoal = localStorage.getItem(`batch_goal_${currentUser.phone}`);
-            const savedProgress = localStorage.getItem(`batch_prog_${currentUser.phone}`);
+            const savedGoal = localStorage.getItem(`batch_target_${currentUser.phone}`);
+            const savedProgress = localStorage.getItem(`batch_progress_${currentUser.phone}`);
+            const savedId = localStorage.getItem(`batch_id_${currentUser.phone}`);
 
-            if (savedGoal) {
+            if (savedGoal && savedId) {
                 batchTarget = Number(savedGoal);
                 batchProgress = savedProgress ? Number(savedProgress) : 0;
+                batchId = savedId;
                 document.getElementById("input-today-goal").value = batchTarget;
                 document.getElementById("current-goal-indicator").innerText = `Active Target: ${batchTarget}`;
             } else {
                 batchTarget = 0;
                 batchProgress = 0;
+                batchId = "";
                 document.getElementById("current-goal-indicator").innerText = `No target set yet`;
             }
 
@@ -715,10 +719,12 @@
                 return;
             }
             batchTarget = val;
-            batchProgress = 0; // Fresh start from zero for this new batch target
+            batchProgress = 0; // Completely fresh batch starting from 0 completed
+            batchId = "batch_" + new Date().getTime(); // Unique ID for this specific target batch
             
-            localStorage.setItem(`batch_goal_${currentUser.phone}`, batchTarget);
-            localStorage.setItem(`batch_prog_${currentUser.phone}`, batchProgress);
+            localStorage.setItem(`batch_target_${currentUser.phone}`, batchTarget);
+            localStorage.setItem(`batch_progress_${currentUser.phone}`, batchProgress);
+            localStorage.setItem(`batch_id_${currentUser.phone}`, batchId);
             
             document.getElementById("current-goal-indicator").innerText = `Active Target: ${batchTarget}`;
             renderDashboardMetrics();
@@ -738,7 +744,7 @@
             document.getElementById("campaign-percent").innerText = `${overallPercent}%`;
             document.getElementById("campaign-bar-fill").style.width = `${overallPercent}%`;
 
-            // Strict batch countdown metrics
+            // Independent Batch Countdown Metrics
             const completedInBatch = Math.min(batchProgress, batchTarget);
             const remainingInBatch = Math.max(0, batchTarget - completedInBatch);
 
@@ -776,7 +782,7 @@
             }
 
             batchProgress += 1;
-            localStorage.setItem(`batch_prog_${currentUser.phone}`, batchProgress);
+            localStorage.setItem(`batch_progress_${currentUser.phone}`, batchProgress);
 
             const todayStr = getTodayDateString();
             dbLogs.push({
@@ -903,7 +909,7 @@
                 const totalCount = userLogs.reduce((acc, curr) => acc + Number(curr.invites_completed || 0), 0);
                 const todayLogs = userLogs.filter(l => String(l.date).startsWith(todayStr));
                 const todayCount = todayLogs.reduce((acc, curr) => acc + Number(curr.invites_completed || 0), 0);
-                const userGoal = localStorage.getItem(`batch_goal_${u.phone}`) || "Not Set";
+                const userGoal = localStorage.getItem(`batch_target_${u.phone}`) || "Not Set";
                 return { u, userLogs, totalCount, todayCount, userGoal };
             });
 
