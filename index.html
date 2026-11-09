@@ -79,13 +79,13 @@
             box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
         }
 
-        .glass-neomorphic-nav {
-            background: rgba(255, 255, 255, 0.88);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15), 
-                        inset 0 1px 0 rgba(255, 255, 255, 1);
+        /* FAB PILL BAR STYLING */
+        .fab-bar {
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.35);
         }
 
         .view-transition-enter {
@@ -432,15 +432,15 @@
 
         </main>
 
-        <!-- FLOATING NAVIGATION BAR (LOCKED FIXED AT BOTTOM) -->
-        <nav id="bottom-nav" class="hidden fixed bottom-4 left-4 right-4 max-w-sm mx-auto glass-neomorphic-nav rounded-2xl px-6 py-3 flex justify-around items-center text-xs font-semibold z-40">
-            <button onclick="switchTab('dashboard')" id="nav-dash" class="flex flex-col items-center text-orange-600 font-bold transition-transform active:scale-95">
-                <i data-lucide="layout-dashboard" class="w-5 h-5 mb-0.5"></i>
+        <!-- FLOATING FAB ACTION BAR (PILL CONTAINER) -->
+        <nav id="bottom-nav" class="hidden fixed bottom-5 left-1/2 transform -translate-x-1/2 fab-bar rounded-full px-5 py-2.5 flex items-center space-x-4 text-xs font-bold text-white z-40 shadow-2xl">
+            <button onclick="switchTab('dashboard')" id="nav-dash" class="flex items-center space-x-2 px-4 py-2 rounded-full transition-all text-orange-400 bg-white/10">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                 <span>My Dashboard</span>
             </button>
-            <div class="w-px h-5 bg-slate-200/80"></div>
-            <button onclick="switchTab('superuser')" id="nav-admin" class="flex flex-col items-center text-slate-400 hover:text-slate-800 font-bold transition-transform active:scale-95">
-                <i data-lucide="shield-check" class="w-5 h-5 mb-0.5"></i>
+            <div class="w-px h-4 bg-white/20"></div>
+            <button onclick="switchTab('superuser')" id="nav-admin" class="flex items-center space-x-2 px-4 py-2 rounded-full transition-all text-slate-300 hover:text-white">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
                 <span>Admin Suite</span>
             </button>
         </nav>
@@ -469,8 +469,6 @@
         let batchProgress = 0;
         let lastBackPress = 0;
         let currentAdminFilter = 'all';
-
-        const PRAISE_MESSAGES = ["Awesome!", "Keep going! 🔥", "1 step closer!", "Great work!", "Fantastic! 🎉", "Target almost there!"];
 
         lucide.createIcons();
 
@@ -592,21 +590,24 @@
             admin.classList.add("hidden");
             detail.classList.add("hidden");
 
-            document.getElementById("nav-dash").className = "flex flex-col items-center text-slate-400 hover:text-slate-800 font-bold transition-transform active:scale-95";
-            document.getElementById("nav-admin").className = "flex flex-col items-center text-slate-400 hover:text-slate-800 font-bold transition-transform active:scale-95";
+            const btnDash = document.getElementById("nav-dash");
+            const btnAdmin = document.getElementById("nav-admin");
+
+            btnDash.className = "flex items-center space-x-2 px-4 py-2 rounded-full transition-all text-slate-300 hover:text-white";
+            btnAdmin.className = "flex items-center space-x-2 px-4 py-2 rounded-full transition-all text-slate-300 hover:text-white";
 
             if (tab === 'dashboard') {
                 dash.classList.remove("hidden");
                 dash.classList.remove("view-transition-enter");
                 void dash.offsetWidth;
                 dash.classList.add("view-transition-enter");
-                document.getElementById("nav-dash").className = "flex flex-col items-center text-orange-600 font-bold transition-transform active:scale-95";
+                btnDash.className = "flex items-center space-x-2 px-4 py-2 rounded-full transition-all text-orange-400 bg-white/10";
             } else if (tab === 'superuser') {
                 admin.classList.remove("hidden");
                 admin.classList.remove("view-transition-enter");
                 void admin.offsetWidth;
                 admin.classList.add("view-transition-enter");
-                document.getElementById("nav-admin").className = "flex flex-col items-center text-orange-600 font-bold transition-transform active:scale-95";
+                btnAdmin.className = "flex items-center space-x-2 px-4 py-2 rounded-full transition-all text-orange-400 bg-white/10";
                 loadSuperUserData();
             }
         }
@@ -677,7 +678,6 @@
                 navBar.classList.add("hidden");
             }
 
-            // Restore active batch state from local memory
             const savedTarget = localStorage.getItem(`batch_target_${currentUser.phone}`);
             const savedProg = localStorage.getItem(`batch_prog_${currentUser.phone}`);
 
@@ -707,7 +707,7 @@
                 return;
             }
             batchTarget = val;
-            batchProgress = 0; // Reset batch completed count to 0 for the fresh target
+            batchProgress = 0;
             
             localStorage.setItem(`batch_target_${currentUser.phone}`, batchTarget);
             localStorage.setItem(`batch_prog_${currentUser.phone}`, batchProgress);
@@ -718,7 +718,6 @@
         }
 
         function renderDashboardMetrics() {
-            // Overall Campaign Lifetime Metrics
             const userLogs = dbLogs.filter(l => String(l.phone).replace(/\D/g, '') === String(currentUser.phone).replace(/\D/g, ''));
             const overallTarget = Number(currentUser.target_goal) || 300;
             const totalInvitesDone = userLogs.reduce((acc, curr) => acc + Number(curr.invites_completed || 0), 0);
@@ -730,7 +729,6 @@
             document.getElementById("campaign-percent").innerText = `${overallPercent}%`;
             document.getElementById("campaign-bar-fill").style.width = `${overallPercent}%`;
 
-            // Active Batch Countdown Metrics
             const remainingInBatch = Math.max(0, batchTarget - batchProgress);
 
             document.getElementById("rpt-today-goal").innerText = batchTarget;
@@ -766,24 +764,19 @@
                 return;
             }
 
-            // Increment current active batch progress
             batchProgress += 1;
             localStorage.setItem(`batch_prog_${currentUser.phone}`, batchProgress);
 
             const todayStr = getTodayDateString();
             
-            // Add entry locally to logs
             dbLogs.push({
                 phone: currentUser.phone,
                 date: todayStr,
                 invites_completed: 1
             });
 
-            // Check if batch is completed right after this tap
             if (batchProgress >= batchTarget) {
                 showToast("🎉 Target Completed! Set a new batch target to continue.");
-                
-                // Clear active batch so user MUST set a fresh target
                 setTimeout(() => {
                     batchTarget = 0;
                     batchProgress = 0;
@@ -794,13 +787,11 @@
                     renderDashboardMetrics();
                 }, 1800);
             } else {
-                const randomPraise = PRAISE_MESSAGES[Math.floor(Math.random() * PRAISE_MESSAGES.length)];
-                showToast(randomPraise);
+                showToast("Awesome! 🔥");
             }
 
             renderDashboardMetrics();
 
-            // Background async sync to Google Sheets
             try {
                 await fetch(WEB_APP_URL, {
                     method: "POST",
